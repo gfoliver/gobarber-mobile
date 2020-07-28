@@ -1,7 +1,6 @@
 import React from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
-
-import theme from '../styles/theme'
+import { useTheme } from 'styled-components'
 
 import Login from '../pages/Login'
 import Register from '../pages/Register'
@@ -9,6 +8,8 @@ import Register from '../pages/Register'
 const Auth = createStackNavigator()
 
 const AuthRouter: React.FC = () => {
+    const theme = useTheme()
+
     return (
         <Auth.Navigator screenOptions={{
             headerShown: false,
