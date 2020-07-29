@@ -1,24 +1,20 @@
 import React from 'react'
-import { createStackNavigator } from '@react-navigation/stack'
-import { useTheme } from 'styled-components'
 
-import Login from '../pages/Login'
-import Register from '../pages/Register'
+import AuthRoutes from './auth.routes'
+import AppRoutes from './app.routes'
 
-const Auth = createStackNavigator()
+import { useAuth } from '../context/Auth'
 
-const AuthRouter: React.FC = () => {
-    const theme = useTheme()
+import LoadingScreen from '../components/LoadingScreen'
 
-    return (
-        <Auth.Navigator screenOptions={{
-            headerShown: false,
-            cardStyle: { backgroundColor: theme.colors.background }
-        }}>
-            <Auth.Screen name="Login" component={Login} />
-            <Auth.Screen name="Register" component={Register} />
-        </Auth.Navigator>
-    )
+const Router: React.FC = () => {
+    const { user, loading } = useAuth()
+
+    if (loading) {
+        return <LoadingScreen />
+    }
+
+    return user ? <AppRoutes /> : <AuthRoutes />
 }
 
-export default AuthRouter
+export default Router

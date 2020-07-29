@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useImperativeHandle, forwardRef, useState, useCallback } from 'react'
 import { TextInputProps } from 'react-native'
 import { useTheme } from 'styled-components'
 import { useField } from '@unform/core'
@@ -14,13 +14,36 @@ interface InputValueReference {
   value: string
 }
 
-const Input: React.FC<InputProps> = ({ name, icon, ...rest }) => {
+interface InputRef {
+  focus(): void
+}
+
+const Input: React.RefForwardingComponent<InputRef, InputProps> = ({ name, icon, ...rest }, ref) => {
   const theme = useTheme()
   
   const { fieldName, registerField, defaultValue = '', error } = useField(name)
 
   const inputValueRef = useRef<InputValueReference>({ value: defaultValue })
   const inputElementRef = useRef(null)
+
+  const [isFocused, setIsFocused] = useState(false)
+  const [isFilled, setisFilled] = useState(false)
+
+  const handleInputFocus = useCallback(() => {
+    setIsFocused(true)
+  }, [])
+  
+  const handleInputBlur = useCallback(() => {
+    setIsFocused(false)
+
+    setisFilled(!!inputValueRef.current.value)
+  }, [])
+
+  useImperativeHandle(ref, () => ({ 
+    focus() {
+      inputElementRef.current.focus()
+    } 
+  }))
 
   useEffect(() => {
     registerField<string>({
@@ -39,17 +62,19 @@ const Input: React.FC<InputProps> = ({ name, icon, ...rest }) => {
   }, [fieldName, registerField])
 
   return (
-    <Container>
-      <Icon name={icon} size={20} color={theme.colors.textLight} />
+    <Container isFocused={isFocused} hasError={!!error}>
+      <Icon name={icon} size={20} color={isFocused || isFilled ? theme.colors.primary : theme.colors.textLight} />
       <TextInput 
         ref={inputElementRef}
         keyboardAppearance="dark"
         placeholderTextColor={theme.colors.textLight} 
         onChangeText={value => inputValueRef.current.value = value}
+        onFocus={handleInputFocus}
+        onBlur={handleInputBlur}
         {...rest} 
       />
     </Container>
   )
 }
 
-export default Input
+export default forwardRef(Input)
